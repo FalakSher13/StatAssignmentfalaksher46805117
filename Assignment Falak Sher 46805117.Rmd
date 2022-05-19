@@ -1,0 +1,178 @@
+---
+title: "Assignment Semester 1 2022"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Question 1
+
+### a. Produce a plot and a correlation matrix of the data. Comment on possible relationships between the response and predictors and relationships between the predictors themselves.
+
+```{r}
+hotel <- read.table("hotel2022 (1).dat", header = T)
+head(hotel)
+```
+
+```{r}
+pairs(hotel)
+```
+
+```{r}
+cor(hotel)
+```
+From above plot and correlation matrix, I observed that the from all predictors are has strongest correlation with energy. The correlation value between these two variables is 0.96. The predictor rooms also has stronger relation with dependent variable energy. The correlation value between these two variables is 0.68. From all predictors area and rooms has strongest relation. The correlation value between these two variables is 0.76.
+
+### • Fit a model using all the predictors to explain the energy response.
+
+```{r}
+mod <- lm(energy ~ ., hotel)
+summary(mod)
+```
+
+### • Using the full model, estimate the impact each hectare of hotel area has on the energy efficiency of the hotel. Do this by producing a 95% confidence interval that quantifies the change in energy consumption for each extra hectare of hotel area and comment.
+
+```{r}
+confint(mod)
+```
+The 95% confidence interval for are is [1778.84, 2883.38] which means we are 95% confident that if we hold other predictors constant and increase the value of are by one hectare the energy consumption will be between 1778.84 to 2883.38.
+
+#### c Conduct an F-test for the overall regression i.e. is there any relationship between the response and the predictors. In your answer:
+### • Write down the mathematical multiple regression model for this situation, defining all appropriate parameters.
+
+```{r}
+summary(mod)
+```
+
+The equation for multiple regression model is:
+$$energy = -3197.279 + 2331.11*area + 2.358*age - 5.383 * rooms + 3234.554*occupancy$$
+#### • Write down the Hypotheses for the Overall ANOVA test of multiple regression.
+The null and alternative hypotheses for the overall anova test of multiple regression are shown below:
+H0: There is no significant relation between the response variable and predictors.
+There is a significant relation between atleast one of the predictors and response variable.
+The significance level alpha = 0.05.
+
+#### • Produce an ANOVA table for the overall multiple regression model (One combined regression SS source is sufficient).
+
+```{r}
+anova(mod)
+```
+```{r}
+summary(mod)
+```
+
+### • Compute the F statistic for this test.
+The value of F-statistic is 44.3.
+
+### • State the Null distribution for the test statistic.
+The null distribution for test statistic is the multiple regression model is not statistically significant.
+
+#### • Compute the P-Value
+The p-value is  1.019e-06.
+
+###• State your conclusion (both statistical conclusion and contextual conclusion).
+Since the p-value is less than significance level alpha, so I reject the null hypothesis and conclude that there is a significant relation between at least one predictor and response variable so the model is statistically significant.
+
+###d. [10 marks] Validate the full model and comment on whether the full regression model is appropriate to explain the energy efficiency of the hotels.
+There is only one predictor energy, that has p-value of coefficient less than significance level. All other predictors don't have statistically significant relation with dependent variable so the full regression model is not appropriate at all.
+
+### e. [2 marks] Find the R2 and comment on what it means in the context of this dataset.
+
+```{r}
+summary(mod)
+```
+The R-squared value is 0.9416 which means 94.16% of variation in energy consumption is explained by all predictors.
+
+
+#### f. [3 marks] Using model selection procedures discussed in the course, find the best multiple regression model that explains the data. State the final fitted regression model.
+
+```{r}
+null <- lm(energy ~ 1, data = hotel)
+full <- lm(energy ~., data = hotel)
+best_mod <- step(null, direction='forward', scope=formula(full), trace=0)
+summary(best_mod)
+```
+The final fitted regression model has only one predictor that is area. The regression equation is:
+$$energy = -1874.6 + 2061.4*area$$
+### g. Comment on the R2 and adjusted R2 in the full and final model you chose in part d. In particular explain why those goodness of fitness measures change but not in the same way.
+The R-squared value of final model is 0.9277 which means 92.77% of variation in the dependent variable is explained by the predictors. The R-squared value is bit less as compare to the full model which is understandable as that model has more predictor. Since the final model has only one predictor that's why the fitness measures changed.
+
+
+## Question 2
+
+#### a. [2 marks] For this study, is the design balanced or unbalanced? Explain why.
+
+```{r}
+#reading data
+movies <- read.table("movie (2).dat", header = T)
+head(movies)
+```
+
+The balance design's are one that have equal number of observations for all possible level of combinations. For checking the number of observations for all possible level of combinations, I used table function.
+
+```{r}
+table(movies$Gender, movies$Genre)
+```
+
+Since there is a difference in the number of observations for different level of combinations so the design is not balanced and it is unbalanced.
+
+### b. Construct two different preliminary graphs that investigate different features of the data and comment.
+
+```{r}
+boxplot(Score ~ Gender, movies, col = "steelblue", main = "Distribution of Score by Gender")
+```
+From above plot, it is pretty evident that males have higher average value of score as compare to female.
+
+```{r}
+#ineraction plot
+with(movies, interaction.plot(Genre, Gender, Score))
+```
+From above plot it seems that Female tends to have lower mean score as compare to the Male. Action seems to have lowest mean score and Drame seems to have highest mean score
+
+```{r}
+boxplot(Score ~ Genre, movies, col = "steelblue", main = "Distribution of Score by Genre")
+```
+
+From above plot, it is pretty evident that almost all three genres have equal median value of scores. Only Action genre has outliers with low and high value of Scores.
+
+#### c. [4 marks] Write down the full mathematical model for this situation, defining all appropriate parameters.
+
+```{r}
+summary(lm(Score ~ ., data = movies))
+```
+
+The mathematical equation in this case will be:
+$$Scores = b0 + b1*GenderM + b2*GenreComedy + b3*GenreDrama$$
+#d. [15 marks] Analyse the data to study the effect of Gender and Genre on the brand recall Score. These conclusions are only required to be at the qualitative level and can be based off the outcomes of the hypothesis tests you conducted in this part and the preliminary plots in part b. You do not need to statistically examine the multiple comparisons between contrasts and interactions. Remember to
+#• state the null and alternative hypothesis for each test, and
+#• check assumptions.
+
+The null and alternative hypotheses are given below:
+H0:There is no relation between Score and any of predictors.
+Ha: There is a significant relation between Score and at least one of Gender or Genre.
+The significant level alpha = 0.05.
+
+
+
+```{r}
+#first model
+mod1 <- lm(Score ~ Gender + Genre, movies)
+anova(mod1)
+```
+
+The p-value for both Gender and Genre are less than significant level 0.05 so both have significant relation with Score.
+
+```{r}
+#second  model
+mod2 <- lm(Score ~ Genre + Gender, movies)
+anova(mod2)
+```
+
+From this model the p-value of Genre is less than 0.05 so Genre has significant relation with Score and Gender has p-value greater than 0.05 which means Gender hasn't significant relation with score.
+
+```{r}
+#model with interaction term
+mod3 <- lm(Score ~ Genre*Gender, movies)
+anova(mod3)
+```
+Since the interaction terms p-value is greater than significant level alpha = 0.05 so the interaction term is not statistically significant.
